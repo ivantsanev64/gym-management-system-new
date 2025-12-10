@@ -180,7 +180,7 @@ export FTP_PASS="your_password"
 export FTP_DIR="/public_html"
 ```
 
-## 🌳 Branch Strategy
+## Branch Strategy
 ```
 main (production)
 ├── develop (integration)
@@ -229,7 +229,7 @@ git commit -am "chore: bump version to 1.1.0"
 # Automatically deploys to production
 ```
 
-## 🔄 Rollback Strategy
+## Rollback Strategy
 
 ### Automatic Rollback Triggers
 
