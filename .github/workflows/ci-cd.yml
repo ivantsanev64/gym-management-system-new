@@ -94,7 +94,7 @@ jobs:
       
       - name: 🏗️ Build Docker Image
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+          docker build -f docker/Dockerfile -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
           docker tag ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ${{ env.DOCKER_IMAGE }}:latest
           echo "✅ Docker image built successfully"
       
