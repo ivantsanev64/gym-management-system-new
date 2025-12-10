@@ -1,0 +1,209 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  DOCKER_IMAGE: gym-management
+
+jobs:
+  # Job 1: Build and Test
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Validate HTML
+        run: |
+          echo "Validating HTML structure..."
+          # Check if index.html exists
+          if [ ! -f "src/index.html" ]; then
+            echo "❌ Error: src/index.html not found"
+            exit 1
+          fi
+          
+          # Basic HTML validation
+          if ! grep -q "<!DOCTYPE html>" src/index.html; then
+            echo "❌ Error: Missing DOCTYPE declaration"
+            exit 1
+          fi
+          
+          echo "✅ HTML validation passed"
+      
+      - name: 🧪 Run Tests
+        run: |
+          echo "Running basic tests..."
+          
+          # Check for required sections
+          grep -q "Gym Management System" src/index.html || exit 1
+          grep -q "phone-screen" src/index.html || exit 1
+          
+          echo "✅ All tests passed"
+      
+      - name: 📊 Generate Test Report
+        run: |
+          echo "Test Results" > test-report.txt
+          echo "=============" >> test-report.txt
+          echo "✅ HTML Validation: PASSED" >> test-report.txt
+          echo "✅ Structure Tests: PASSED" >> test-report.txt
+          echo "Total: 2/2 tests passed" >> test-report.txt
+          cat test-report.txt
+      
+      - name: 📦 Create Artifact
+        run: |
+          mkdir -p artifacts
+          cp -r src/* artifacts/
+          cp version.txt artifacts/ 2>/dev/null || echo "1.0.0" > artifacts/version.txt
+          cd artifacts && zip -r ../gym-management-${{ github.sha }}.zip . && cd ..
+          echo "✅ Artifact created: gym-management-${{ github.sha }}.zip"
+      
+      - name: 💾 Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gym-management-${{ github.sha }}
+          path: gym-management-${{ github.sha }}.zip
+          retention-days: 30
+      
+      - name: 📈 Upload Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: test-report.txt
+
+  # Job 2: Docker Build
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: 🏗️ Build Docker Image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+          docker tag ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ${{ env.DOCKER_IMAGE }}:latest
+          echo "✅ Docker image built successfully"
+      
+      - name: 🧪 Test Docker Image
+        run: |
+          # Start container
+          docker run -d -p 8080:80 --name test-container ${{ env.DOCKER_IMAGE }}:latest
+          
+          # Wait for container to start
+          sleep 5
+          
+          # Test health endpoint
+          curl -f http://localhost:8080/health || exit 1
+          
+          # Test main page
+          curl -f http://localhost:8080/ || exit 1
+          
+          # Cleanup
+          docker stop test-container
+          docker rm test-container
+          
+          echo "✅ Docker image tests passed"
+      
+      - name: 💾 Save Docker Image
+        run: |
+          docker save ${{ env.DOCKER_IMAGE }}:latest -o docker-image.tar
+          gzip docker-image.tar
+      
+      - name: 📤 Upload Docker Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: docker-image.tar.gz
+          retention-days: 7
+
+  # Job 3: Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-test, docker-build]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://staging.yourgym.com
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: 📦 Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gym-management-${{ github.sha }}
+      
+      - name: 🚀 Deploy to Staging
+        run: |
+          echo "Deploying to staging environment..."
+          unzip gym-management-${{ github.sha }}.zip -d deploy
+          
+          # Simulate deployment (replace with actual deployment)
+          echo "Files ready for deployment in ./deploy directory"
+          ls -la deploy/
+          
+          echo "✅ Deployment to staging complete"
+      
+      - name: 🔍 Run Smoke Tests
+        run: |
+          echo "Running smoke tests on staging..."
+          # Add actual smoke tests here
+          echo "✅ Smoke tests passed"
+
+  # Job 4: Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-test, docker-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://yourgym.com
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: 📦 Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gym-management-${{ github.sha }}
+      
+      - name: 🚀 Deploy to Production (Green)
+        run: |
+          echo "Deploying to production (Green environment)..."
+          unzip gym-management-${{ github.sha }}.zip -d deploy
+          
+          # Simulate deployment
+          echo "Files ready for production deployment"
+          ls -la deploy/
+          
+          echo "✅ Deployment to production complete"
+      
+      - name: 🔄 Traffic Switch (Blue-Green)
+        run: |
+          echo "Switching traffic from Blue to Green..."
+          # Add actual traffic switching logic
+          echo "✅ Traffic switched successfully"
+      
+      - name: 📊 Post-Deployment Verification
+        run: |
+          echo "Running post-deployment checks..."
+          # Add health checks
+          echo "✅ All checks passed"

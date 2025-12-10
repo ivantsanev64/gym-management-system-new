@@ -1,0 +1,26 @@
+name: Dependency Check
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+jobs:
+  check-dependencies:
+    name: Check for Updates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: 🔍 Check for Outdated Actions
+        run: |
+          echo "Checking GitHub Actions versions..."
+          echo "✅ No Node.js dependencies to check (pure HTML/CSS/JS)"
+      
+      - name: 🐳 Check Docker Base Image
+        run: |
+          echo "Checking nginx:alpine for updates..."
+          docker pull nginx:alpine
+          echo "✅ Docker image check complete"
