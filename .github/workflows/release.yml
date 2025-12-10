@@ -11,22 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
       
-      - name: 📦 Build Release Package
+      - name: Build Release Package
         run: |
           mkdir -p release
           cp -r src/* release/
           cd release && zip -r ../gym-management-${{ github.ref_name }}.zip . && cd ..
       
-      - name: 📝 Generate Release Notes
+      - name: Generate Release Notes
         id: release_notes
         run: |
           echo "## What's Changed" > RELEASE_NOTES.md
           git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --oneline >> RELEASE_NOTES.md
       
-      - name: 🎉 Create GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: gym-management-${{ github.ref_name }}.zip

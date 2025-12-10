@@ -11,16 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
       
-      - name: 🔍 Check for Outdated Actions
+      - name: Check for Outdated Actions
         run: |
           echo "Checking GitHub Actions versions..."
-          echo "✅ No Node.js dependencies to check (pure HTML/CSS/JS)"
+          echo "No Node.js dependencies to check (pure HTML/CSS/JS)"
       
-      - name: 🐳 Check Docker Base Image
+      - name: Check Docker Base Image
         run: |
           echo "Checking nginx:alpine for updates..."
           docker pull nginx:alpine
-          echo "✅ Docker image check complete"
+          echo "Docker image check complete"git
