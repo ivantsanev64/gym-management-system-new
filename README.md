@@ -40,7 +40,7 @@ gym-management-system/
 ├── docker-compose.yml          # Docker Compose configuration
 ├── nginx.conf                  # nginx web server config
 ├── .gitignore                  # Git ignore rules
-├── README.md                   # This file
+└── README.md                   # This file
 ```
 
 ## Development
@@ -124,40 +124,8 @@ curl http://localhost:8080/health
 The project uses GitHub Actions for automated testing and deployment.
 
 ### Pipeline Stages
-```
-┌─────────────┐
-│ Code Push   │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ Build & Test│
-│ - Validate  │
-│ - Test      │
-│ - Artifact  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│Docker Build │
-│ - Build img │
-│ - Test img  │
-│ - Save      │
-└──────┬──────┘
-       │
-       ├──────────────────┐
-       ▼                  ▼
-┌──────────────┐   ┌──────────────┐
-│Deploy Staging│   │Deploy Prod   │
-│(develop)     │   │(main)        │
-└──────────────┘   └──────┬───────┘
-                          │
-                          ▼
-                   ┌──────────────┐
-                   │Blue-Green    │
-                   │Traffic Switch│
-                   └──────────────┘
-```
+<img width="2465" height="9293" alt="devops" src="https://github.com/user-attachments/assets/fbad434d-7a1b-4b1e-b70b-af53a7d14c48" />
+
 
 ### Triggering the Pipeline
 
@@ -188,6 +156,8 @@ The system maintains two identical production environments:
 3. If tests pass, traffic switches from Blue to Green
 4. Blue becomes standby for next deployment
 5. If issues occur, instant rollback to Blue
+
+<img width="8803" height="3223" alt="devops1" src="https://github.com/user-attachments/assets/b3250d5a-3820-4e0e-94c0-dacc28228d3d" />
 
 ### Manual Deployment
 
