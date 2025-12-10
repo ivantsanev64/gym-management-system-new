@@ -378,6 +378,14 @@
         </div>
     </div>
     
+    <script src="config.js"></script>
+    <script>
+    // Use feature flags in your code
+    if (isFeatureEnabled('AI_RECOMMENDATIONS')) {
+        // Show AI recommendations
+    }
+    </script>
+
     <script>
         function switchTab(tabName) {
             const contents = document.querySelectorAll('.tab-content');
