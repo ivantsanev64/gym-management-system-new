@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "start": "npx serve src -p 8080",          
+    "test": "node tests/run-tests.js",          
+    "test:watch": "nodemon --watch src --exec npm test",  
+    "test:ui": "npx serve . -p 8080",           
+    "validate": "node tests/validate-html.js",  
+    "docker:build": "docker build -t gym-management:latest .",
+    "docker:run": "docker run -d -p 8080:80 --name gym-app gym-management:latest",
+    "deploy:staging": "./scripts/deploy-ftp.sh staging",
+    "deploy:production": "./scripts/deploy-ftp.sh production"
+  }
+}
